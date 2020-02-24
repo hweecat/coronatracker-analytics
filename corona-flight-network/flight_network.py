@@ -52,4 +52,54 @@ column_order = ['airline', 'airlinecode',
 
 routes_merge_airports[column_order]
 
+#%%
+
+def latlongToArray(x, y):
+    return [x, y]
+
+#%%
+
+airports['pos'] = airports.apply(lambda x: latlongToArray(x['lat'], x['long']), axis=1)
+
+airports
+
+# %%
+
+import networkx as nx
+
+FG = nx.from_pandas_edgelist(routes, 'source', 'destination', edge_attr=['airline', 'source', 'destination', 'equipment'], create_using=nx.MultiDiGraph())
+
+FG.edges(data=True)
+
+#%%
+
+nx.set_node_attributes(FG, airports.set_index('iata')['name'].to_dict(), 'name')
+nx.set_node_attributes(FG, airports.set_index('iata')['lat'].to_dict(), 'lat')
+nx.set_node_attributes(FG, airports.set_index('iata')['long'].to_dict(), 'long')
+nx.set_node_attributes(FG, airports.set_index('iata')['city'].to_dict(), 'city')
+nx.set_node_attributes(FG, airports.set_index('iata')['country'].to_dict(), 'country')
+pos = airports[airports['iata'] != '\\N'].set_index('iata')[['lat','long']].to_dict(orient='index')
+
+#%%
+
+FG.nodes(data=True)
+
+#%%
+
+# TODO: Fix bug "NetworkXError: Node 'AOS' has no position."
+# pos['AOS'] KeyError
+
+for node in FG.nodes:
+    try:
+        FG.nodes[node]['pos'] = list(pos[node].values())
+    except KeyError:
+        FG.nodes[node]['pos'] = [0,0]
+
+#%%
+
+import matplotlib.pyplot as plt
+
+nx.draw_networkx(FG, pos=pos)
+plt.show()
+
 # %%
