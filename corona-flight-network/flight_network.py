@@ -78,7 +78,7 @@ nx.set_node_attributes(FG, airports.set_index('iata')['lat'].to_dict(), 'lat')
 nx.set_node_attributes(FG, airports.set_index('iata')['long'].to_dict(), 'long')
 nx.set_node_attributes(FG, airports.set_index('iata')['city'].to_dict(), 'city')
 nx.set_node_attributes(FG, airports.set_index('iata')['country'].to_dict(), 'country')
-pos = airports[airports['iata'] != '\\N'].set_index('iata')[['lat','long']].to_dict(orient='index')
+pos = airports[airports['iata'] != '\\N'].set_index('iata')[['pos']].to_dict(orient='dict')['pos']
 
 #%%
 
@@ -91,15 +91,25 @@ FG.nodes(data=True)
 
 for node in FG.nodes:
     try:
-        FG.nodes[node]['pos'] = list(pos[node].values())
+        FG.nodes[node]['pos'] = pos[node]
     except KeyError:
         FG.nodes[node]['pos'] = [0,0]
+        pos[node] = {}
+        pos[node]['lat'] = 0
+        pos[node]['long'] = 0
+
+#%%
+
+FG_pos = {}
+for node in FG.nodes:
+    FG_pos[node] = FG.nodes[node]['pos']
 
 #%%
 
 import matplotlib.pyplot as plt
 
-nx.draw_networkx(FG, pos=pos)
+nx.draw_networkx(FG, pos=FG_pos)
+plt.figure(figsize=[100,50])
 plt.show()
 
 # %%
