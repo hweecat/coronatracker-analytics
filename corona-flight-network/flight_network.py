@@ -251,7 +251,9 @@ for source, dest, index in FG_exChina.edges:
 
 # calculate number of edges incident to each node within MultiGraph
 
-for node in FG_WUH.nodes:
-    FG_WUH.nodes[node]['degree'] = FG_WUH.degree(node)
-    FG_WUH.nodes[node]['in-degree'] = FG_WUH.in_degree(node)
-    FG_WUH.nodes[node]['out-degree'] = FG_WUH.out_degree(node)
+for node in FG_exChina.nodes:
+    FG_exChina.nodes[node]['degree'] = FG_exChina.degree(node)
+    FG_exChina.nodes[node]['in-degree'] = FG_exChina.in_degree(node)
+    FG_exChina.nodes[node]['out-degree'] = FG_exChina.out_degree(node)
+
+# %%
