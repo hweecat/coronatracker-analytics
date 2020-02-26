@@ -113,3 +113,72 @@ plt.figure(figsize=[100,50])
 plt.show()
 
 # %%
+###################################################################################
+# FLIGHTS FROM WUHAN AIRPORT (IATA: WUH)
+###################################################################################
+
+
+routes_WUH = routes[routes['source'] == 'WUH']
+FG_WUH = nx.from_pandas_edgelist(routes_WUH, 'source', 'destination', edge_attr=['airline', 'source', 'destination', 'equipment'], create_using=nx.MultiDiGraph())
+
+FG_WUH.edges(data=True)
+
+# %%
+
+nx.set_node_attributes(FG_WUH, airports.set_index('iata')['name'].to_dict(), 'name')
+nx.set_node_attributes(FG_WUH, airports.set_index('iata')['lat'].to_dict(), 'lat')
+nx.set_node_attributes(FG_WUH, airports.set_index('iata')['long'].to_dict(), 'long')
+nx.set_node_attributes(FG_WUH, airports.set_index('iata')['city'].to_dict(), 'city')
+nx.set_node_attributes(FG_WUH, airports.set_index('iata')['country'].to_dict(), 'country')
+pos = airports[airports['iata'] != '\\N'].set_index('iata')[['pos']].to_dict(orient='dict')['pos']
+
+#%%
+
+for node in FG_WUH.nodes:
+    try:
+        FG_WUH.nodes[node]['pos'] = pos[node]
+    except KeyError:
+        FG_WUH.nodes[node]['pos'] = [0,0]
+        pos[node] = {}
+        pos[node]['lat'] = 0
+        pos[node]['long'] = 0
+
+#%%
+
+FG_WUH_pos = {}
+for node in FG_WUH.nodes:
+    FG_WUH_pos[node] = FG_WUH.nodes[node]['pos']
+
+# %%
+
+#%%
+
+import matplotlib.pyplot as plt
+
+nx.draw_networkx(FG_WUH, pos=FG_pos)
+plt.figure(figsize=[100,50])
+plt.show()
+
+# %%
+
+nx.draw(FG_WUH, pos=nx.kamada_kawai_layout(FG_WUH))
+plt.show()
+
+# %%
+
+# calculate distance between airports and add feature to edges
+
+from geopy.distance import geodesic
+
+for source, dest, index in FG_WUH.edges:
+    FG_WUH[source][dest][index]['distance'] = geodesic(tuple(FG_WUH.nodes['WUH']['pos']), tuple(FG_WUH.nodes['SIN']['pos']),
+        ellipsoid='GRS-80').km
+
+# %%
+
+# calculate number of edges incident to each node within MultiGraph
+
+for node in FG_WUH.nodes:
+    FG_WUH.nodes[node]['degree'] = FG_WUH.degree(node)
+
+# %%
