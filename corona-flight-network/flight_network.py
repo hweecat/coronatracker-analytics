@@ -155,7 +155,7 @@ for node in FG_WUH.nodes:
 
 import matplotlib.pyplot as plt
 
-nx.draw_networkx(FG_WUH, pos=FG_pos)
+nx.draw_networkx(FG_WUH, pos=FG_WUH_pos)
 plt.figure(figsize=[100,50])
 plt.show()
 
@@ -171,7 +171,7 @@ plt.show()
 from geopy.distance import geodesic
 
 for source, dest, index in FG_WUH.edges:
-    FG_WUH[source][dest][index]['distance'] = geodesic(tuple(FG_WUH.nodes['WUH']['pos']), tuple(FG_WUH.nodes['SIN']['pos']),
+    FG_WUH[source][dest][index]['distance'] = geodesic(tuple(FG_WUH.nodes[source]['pos']), tuple(FG_WUH.nodes[dest]['pos']),
         ellipsoid='GRS-80').km
 
 # %%
@@ -180,5 +180,78 @@ for source, dest, index in FG_WUH.edges:
 
 for node in FG_WUH.nodes:
     FG_WUH.nodes[node]['degree'] = FG_WUH.degree(node)
+    FG_WUH.nodes[node]['in-degree'] = FG_WUH.in_degree(node)
+    FG_WUH.nodes[node]['out-degree'] = FG_WUH.out_degree(node)
 
 # %%
+###################################################################################
+# FLIGHTS OUTSIDE CHINA
+###################################################################################
+
+airports_exChina = airports[airports['country'] != 'China'][airports['iata'] != '\\N']
+airports_exChina_iata_list = airports_exChina['iata'].unique().tolist()
+
+#%%
+
+routes_exChina = routes[routes['source'].isin(airports_exChina_iata_list)]
+FG_exChina = nx.from_pandas_edgelist(routes_exChina, 'source', 'destination', edge_attr=['airline', 'source', 'destination', 'equipment'], create_using=nx.MultiDiGraph())
+
+FG_exChina.edges(data=True)
+
+# %%
+
+nx.set_node_attributes(FG_exChina, airports.set_index('iata')['name'].to_dict(), 'name')
+nx.set_node_attributes(FG_exChina, airports.set_index('iata')['lat'].to_dict(), 'lat')
+nx.set_node_attributes(FG_exChina, airports.set_index('iata')['long'].to_dict(), 'long')
+nx.set_node_attributes(FG_exChina, airports.set_index('iata')['city'].to_dict(), 'city')
+nx.set_node_attributes(FG_exChina, airports.set_index('iata')['country'].to_dict(), 'country')
+pos = airports[airports['iata'] != '\\N'].set_index('iata')[['pos']].to_dict(orient='dict')['pos']
+
+#%%
+
+for node in FG_exChina.nodes:
+    try:
+        FG_exChina.nodes[node]['pos'] = pos[node]
+    except KeyError:
+        FG_exChina.nodes[node]['pos'] = [0,0]
+        pos[node] = {}
+        pos[node]['lat'] = 0
+        pos[node]['long'] = 0
+
+#%%
+
+FG_exChina_pos = {}
+for node in FG_exChina.nodes:
+    FG_exChina_pos[node] = FG_exChina.nodes[node]['pos']
+
+#%%
+
+import matplotlib.pyplot as plt
+
+nx.draw_networkx(FG_exChina, pos=FG_exChina_pos)
+plt.figure(figsize=[100,50])
+plt.show()
+
+# %%
+
+nx.draw(FG_exChina, pos=nx.kamada_kawai_layout(FG_exChina))
+plt.show()
+
+# %%
+
+# calculate distance between airports and add feature to edges
+
+from geopy.distance import geodesic
+
+for source, dest, index in FG_exChina.edges:
+    FG_exChina[source][dest][index]['distance'] = geodesic(tuple(FG_exChina.nodes[source]['pos']), tuple(FG_exChina.nodes[dest]['pos']),
+        ellipsoid='GRS-80').km
+
+# %%
+
+# calculate number of edges incident to each node within MultiGraph
+
+for node in FG_WUH.nodes:
+    FG_WUH.nodes[node]['degree'] = FG_WUH.degree(node)
+    FG_WUH.nodes[node]['in-degree'] = FG_WUH.in_degree(node)
+    FG_WUH.nodes[node]['out-degree'] = FG_WUH.out_degree(node)
