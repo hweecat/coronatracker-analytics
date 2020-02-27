@@ -257,3 +257,13 @@ for node in FG_exChina.nodes:
     FG_exChina.nodes[node]['out-degree'] = FG_exChina.out_degree(node)
 
 # %%
+
+# compute node connectivity between source and target
+# (two distinct, nonadjacent nodes)
+# this algorithm is a fast approximation that gives
+# strict lower bound on actual number of
+# node independent paths between two nodes 
+
+from networkx.algorithms import approximation as approx
+
+approx.local_node_connectivity(FG_exChina, 'SIN', 'LAX')
