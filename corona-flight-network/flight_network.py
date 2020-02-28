@@ -266,4 +266,11 @@ for node in FG_exChina.nodes:
 
 from networkx.algorithms import approximation as approx
 
-approx.local_node_connectivity(FG_exChina, 'SIN', 'LAX')
+for source, dest, index in FG_exChina.edges:
+    try:
+        FG_exChina[source][dest][index]['no. of node independent paths'] = approx.local_node_connectivity(FG_exChina, source, dest)
+    except:
+        print((source, dest, index))
+        continue
+
+# %%
