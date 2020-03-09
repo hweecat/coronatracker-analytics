@@ -274,3 +274,5 @@ for source, dest, index in FG_exChina.edges:
         continue
 
 # %%
+
+nx.to_numpy_matrix(FG_exChina, nodelist=airports_exChina_iata_list, multigraph_weight=sum, weight='no. of node independent paths')
