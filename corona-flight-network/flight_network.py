@@ -113,6 +113,53 @@ plt.figure(figsize=[100,50])
 plt.show()
 
 # %%
+
+# calculate distance between airports and add feature to edges
+
+from geopy.distance import geodesic
+
+for source, dest, index in FG.edges:
+    FG[source][dest][index]['distance'] = geodesic(tuple(FG.nodes[source]['pos']), tuple(FG.nodes[dest]['pos']),
+        ellipsoid='GRS-80').km
+
+# %%
+
+# calculate number of edges incident to each node within MultiGraph
+
+for node in FG.nodes:
+    FG.nodes[node]['degree'] = FG.degree(node)
+    FG.nodes[node]['in-degree'] = FG.in_degree(node)
+    FG.nodes[node]['out-degree'] = FG.out_degree(node)
+
+# %%
+
+# compute node connectivity between source and target
+# (two distinct, nonadjacent nodes)
+# this algorithm is a fast approximation that gives
+# strict lower bound on actual number of
+# node independent paths between two nodes 
+
+from networkx.algorithms import approximation as approx
+
+for source, dest, index in FG.edges:
+    try:
+        FG[source][dest][index]['no. of node independent paths'] = approx.local_node_connectivity(FG, source, dest)
+    except:
+        print((source, dest, index))
+        continue
+
+# %%
+
+pagerank_overall = nx.pagerank_numpy(FG.to_directed())
+
+pagerank_overall
+
+# %%
+
+sorted(pagerank_overall, key=pagerank_overall.get, reverse=True)
+
+
+# %%
 ###################################################################################
 # FLIGHTS FROM WUHAN AIRPORT (IATA: WUH)
 ###################################################################################
