@@ -1,5 +1,9 @@
 #%%
+import matplotlib.pyplot as plt
+import networkx as nx
 import pandas as pd
+from geopy.distance import geodesic
+from networkx.algorithms import approximation as approx
 
 airports = pd.read_csv('airports.txt', delimiter='\t')
 
@@ -65,7 +69,6 @@ airports
 
 # %%
 
-import networkx as nx
 
 FG = nx.from_pandas_edgelist(routes, 'source', 'destination', edge_attr=['airline', 'source', 'destination', 'equipment'], create_using=nx.MultiDiGraph())
 
@@ -106,8 +109,6 @@ for node in FG.nodes:
 
 #%%
 
-import matplotlib.pyplot as plt
-
 nx.draw_networkx(FG, pos=FG_pos)
 plt.figure(figsize=[100,50])
 plt.show()
@@ -115,8 +116,6 @@ plt.show()
 # %%
 
 # calculate distance between airports and add feature to edges
-
-from geopy.distance import geodesic
 
 for source, dest, index in FG.edges:
     FG[source][dest][index]['distance'] = geodesic(tuple(FG.nodes[source]['pos']), tuple(FG.nodes[dest]['pos']),
@@ -139,8 +138,6 @@ for node in FG.nodes:
 # strict lower bound on actual number of
 # node independent paths between two nodes 
 
-from networkx.algorithms import approximation as approx
-
 for source, dest, index in FG.edges:
     try:
         FG[source][dest][index]['no. of node independent paths'] = approx.local_node_connectivity(FG, source, dest)
@@ -157,7 +154,6 @@ pagerank_overall
 # %%
 
 sorted(pagerank_overall, key=pagerank_overall.get, reverse=True)
-
 
 # %%
 ###################################################################################
@@ -200,7 +196,6 @@ for node in FG_WUH.nodes:
 
 #%%
 
-import matplotlib.pyplot as plt
 
 nx.draw_networkx(FG_WUH, pos=FG_WUH_pos)
 plt.figure(figsize=[100,50])
@@ -215,7 +210,6 @@ plt.show()
 
 # calculate distance between airports and add feature to edges
 
-from geopy.distance import geodesic
 
 for source, dest, index in FG_WUH.edges:
     FG_WUH[source][dest][index]['distance'] = geodesic(tuple(FG_WUH.nodes[source]['pos']), tuple(FG_WUH.nodes[dest]['pos']),
@@ -273,7 +267,6 @@ for node in FG_exChina.nodes:
 
 #%%
 
-import matplotlib.pyplot as plt
 
 nx.draw_networkx(FG_exChina, pos=FG_exChina_pos)
 plt.figure(figsize=[100,50])
@@ -287,8 +280,6 @@ plt.show()
 # %%
 
 # calculate distance between airports and add feature to edges
-
-from geopy.distance import geodesic
 
 for source, dest, index in FG_exChina.edges:
     FG_exChina[source][dest][index]['distance'] = geodesic(tuple(FG_exChina.nodes[source]['pos']), tuple(FG_exChina.nodes[dest]['pos']),
@@ -311,7 +302,6 @@ for node in FG_exChina.nodes:
 # strict lower bound on actual number of
 # node independent paths between two nodes 
 
-from networkx.algorithms import approximation as approx
 
 for source, dest, index in FG_exChina.edges:
     try:
